@@ -12,11 +12,12 @@ public class PointCloudRenderer : MonoBehaviour
     private uint _particleCount = 0;
     private Texture2D _texColor;
     private Texture2D _texPosScale;
-    private uint _resolution = 89;
+    private uint _resolution = 2048;
 
 
     public void RenderPoints(List<IPoint<float>> points)
     {
+        Debug.Log("Rendering " + points.Count + " points");
         RenderSettings.ambientLight = Color.black;
         Vector3[] positions = new Vector3[points.Count];
         Color[] colors = new Color[points.Count];
@@ -25,7 +26,7 @@ public class PointCloudRenderer : MonoBehaviour
         foreach (IPoint<float> point in points)
         {
             positions[i] = new Vector3(point.X, point.Y, point.Z);
-            colors[i] = new Color(.5f, 1f, 1f);
+            colors[i] = new Color(point.Color[0] / 255f, point.Color[1] / 255f, point.Color[2] / 255f);
             i++;
         }
 

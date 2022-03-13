@@ -6,8 +6,7 @@ using UnityEngine;
 
 public class Loader : MonoBehaviour
 {
-    public string tile;
-    public string pntsFile;
+    public string jsonTile;
 
     private const string ALLOWED_FORMAT = "pnts";
     private const int FORMAT_LENGTH = 4;
@@ -41,13 +40,41 @@ public class Loader : MonoBehaviour
         Debug.Log("Start loading Files");
         _points = new List<IPoint<float>>();
         _pointCloudRenderer = GameObject.Find("Settings").GetComponent<PointCloudRenderer>();
-        readPntsFile();
+        readTileJson(jsonTile);
+        _pointCloudRenderer.RenderPoints(_points);
+    }
+
+    private void readTileJson(string jsonTile)
+    {
+        if (File.Exists(jsonTile))
+        {
+            string json = File.ReadAllText(jsonTile, Encoding.UTF8);
+            TileSet tileSet = parseTileSet(json);
+
+            foreach (Child child in tileSet.root.children)
+            {
+                string childContent = Path.GetDirectoryName(jsonTile) + "/" + child.content.uri;
+                if (childContent.EndsWith(ALLOWED_FORMAT))
+                {
+                    readPntsFile(childContent);
+                }
+                else
+                {
+                    readTileJson(childContent);
+                }
+            }
+            readPntsFile(Path.GetDirectoryName(jsonTile) + "/" + tileSet.root.content.uri);
+        }
+        else
+        {
+            Debug.Log(jsonTile + " does not exist.");
+        }
     }
 
     /// <summary>
     /// Read the complete binary pnts file and create usable points.
     /// </summary>
-    private void readPntsFile()
+    private void readPntsFile(string pntsFile)
     {
         if (File.Exists(pntsFile))
         {
@@ -61,9 +88,9 @@ public class Loader : MonoBehaviour
                         return;
                     }
 
-                    _featureTable = parseFeatureTable(reader.ReadBytes((int) _featureTableJSONByteLength));
+                    _featureTable = parseFeatureTable(reader.ReadBytes((int)_featureTableJSONByteLength));
 
-                    if (_featureTable.POINTS_LENGTH * POINT_SIZE * N_POINT_BYTES == _featureTable.RGB.byteOffset) 
+                    if (_featureTable.POINTS_LENGTH * POINT_SIZE * N_POINT_BYTES == _featureTable.RGB.byteOffset)
                     {
                         _pointType = PointTypes.NPoint;
                     }
@@ -77,28 +104,33 @@ public class Loader : MonoBehaviour
                         return;
                     }
 
+                    List<IPoint<float>> localPoints = new List<IPoint<float>>();
 
                     for (int i = 0; i < _featureTable.POINTS_LENGTH; i++)
                     {
                         var x = reader.ReadSingle();
                         var y = reader.ReadSingle();
                         var z = reader.ReadSingle();
-                        
-                        _points.Add(new NPoint(x, y, z));
-                        Debug.Log(_points[i].ToString());
-                        Debug.Log(i);
+
+                        localPoints.Add(new NPoint(x, y, z));
                     }
 
+                    for (int i = 0; i < _featureTable.POINTS_LENGTH; i++)
+                    {
+                        var r = reader.ReadByte();
+                        var g = reader.ReadByte();
+                        var b = reader.ReadByte();
 
-                    _pointCloudRenderer.RenderPoints(_points);
+                        localPoints[i].Color = new byte[] {r, g, b};
+                    }
+
+                    _points.AddRange(localPoints);
                 }
             }
-
-
         }
         else
         {
-            Debug.Log("File does not exists.");
+            Debug.Log(pntsFile + " does not exists.");
         }
     }
 
@@ -150,6 +182,11 @@ public class Loader : MonoBehaviour
         string jsonStr = Encoding.UTF8.GetString(json);
 
         return JsonUtility.FromJson<FeatureTable>(jsonStr);
+    }
+
+    private TileSet parseTileSet(string json)
+    {
+        return JsonUtility.FromJson<TileSet>(json);
     }
 
     // Update is called once per frame

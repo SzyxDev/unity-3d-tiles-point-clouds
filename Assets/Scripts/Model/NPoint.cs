@@ -10,7 +10,7 @@ public class NPoint : IPoint<float>
     public float X { get; set; }
     public float Y { get; set; }
     public float Z { get; set; }
-    public uint[] Color { get; set; }
+    public byte[] Color { get; set; }
 
     public override string ToString() => X + " " + Y + " " + Z;
 }

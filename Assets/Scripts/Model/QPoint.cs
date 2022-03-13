@@ -12,5 +12,5 @@ public class QPoint : IPoint<ushort>
     public ushort X { get; set; }
     public ushort Y { get; set; }
     public ushort Z { get; set; }
-    public uint[] Color { get; set; }
+    public byte[] Color { get; set; }
 }

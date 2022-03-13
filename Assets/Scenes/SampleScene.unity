@@ -153,8 +153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0be2822f823e7c947b30532ae27e0969, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tile: 
-  pntsFile: Assets\Examples\points.pnts
+  jsonTile: D:\Data\Pointclouds\LAS\out\NEONDSSampleLiDARPointCloud\tileset.json
 --- !u!4 &317350824
 Transform:
   m_ObjectHideFlags: 0
@@ -281,10 +280,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17ce4d35968ea3043b0a5a4a41a19393, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainSpeed: 100
+  mainSpeed: 10
   shiftAdd: 250
   maxShift: 1000
-  camSens: 0.25
+  camSens: 0.1
   rotateOnlyIfMousedown: 1
   movementStaysFlat: 1
 --- !u!114 &963194230
