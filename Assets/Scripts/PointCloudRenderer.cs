@@ -15,22 +15,24 @@ public class PointCloudRenderer : MonoBehaviour
     private uint _resolution = 2048;
 
 
-    public void RenderPoints(List<IPoint<float>> points)
+    public void RenderPoints(List<List<IPoint<float>>> pointsLists)
     {
-        Debug.Log("Rendering " + points.Count + " points");
         RenderSettings.ambientLight = Color.black;
-        Vector3[] positions = new Vector3[points.Count];
-        Color[] colors = new Color[points.Count];
-        uint i = 0;
+        
+        List<Vector3> positions = new List<Vector3>();
+        List<Color> colors = new List<Color>();
 
-        foreach (IPoint<float> point in points)
+        foreach (List<IPoint<float>> points in pointsLists)
         {
-            positions[i] = new Vector3(point.X, point.Y, point.Z);
-            colors[i] = new Color(point.Color[0] / 255f, point.Color[1] / 255f, point.Color[2] / 255f);
-            i++;
-        }
 
-        setParticles(positions, colors);
+            foreach (IPoint<float> point in points)
+            {
+                positions.Add(new Vector3(point.X, point.Y, point.Z));
+                colors.Add(new Color(point.Color[0] / 255f, point.Color[1] / 255f, point.Color[2] / 255f));
+            }
+        }
+        Debug.Log("Rendering " + positions.Count + " points");
+        setParticles(positions.ToArray(), colors.ToArray());
     }
 
     private void Update()
