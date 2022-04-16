@@ -22,8 +22,6 @@ public class PointCloudRenderer : MonoBehaviour
     /// <param name="pointsLists">The list of points to render</param>
     public void RenderPoints(List<List<IPoint<float>>> pointsLists)
     {
-        RenderSettings.ambientLight = Color.black;
-        
         List<Vector3> positions = new List<Vector3>();
         List<Color> colors = new List<Color>();
 
@@ -36,8 +34,8 @@ public class PointCloudRenderer : MonoBehaviour
                 colors.Add(new Color(point.Color[0] / 255f, point.Color[1] / 255f, point.Color[2] / 255f));
             }
         }
+        Debug.Log("Rendering " + positions.Count + " points");
         setPoints(positions.ToArray(), colors.ToArray());
-        Debug.Log("Render End: " + DateTime.Now);
     }
 
     /// <summary>

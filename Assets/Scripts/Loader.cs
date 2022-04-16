@@ -35,7 +35,6 @@ public class Loader : MonoBehaviour
     void Start()
     {
         Debug.Log("Start loading files");
-        Debug.Log("loading Start: " + DateTime.Now);
         _tasks = new ConcurrentBag<Task>();
         _points = new List<List<IPoint<float>>>();
         _pointCloudRenderer = GameObject.Find("Settings").GetComponent<PointCloudRenderer>();
@@ -60,7 +59,6 @@ public class Loader : MonoBehaviour
         }
         
         Debug.Log("Finish loading files");
-        Debug.Log("loading End: " + DateTime.Now);
         _pointCloudRenderer.RenderPoints(_points);
     }
 
