@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -36,6 +35,7 @@ public class Loader : MonoBehaviour
     void Start()
     {
         Debug.Log("Start loading files");
+        Debug.Log("loading Start: " + DateTime.Now);
         _tasks = new ConcurrentBag<Task>();
         _points = new List<List<IPoint<float>>>();
         _pointCloudRenderer = GameObject.Find("Settings").GetComponent<PointCloudRenderer>();
@@ -60,9 +60,15 @@ public class Loader : MonoBehaviour
         }
         
         Debug.Log("Finish loading files");
+        Debug.Log("loading End: " + DateTime.Now);
         _pointCloudRenderer.RenderPoints(_points);
     }
 
+    /// <summary>
+    /// Returns a list of all the child folders of the root folder
+    /// </summary>
+    /// <param name="rootFolder">The root folder path</param>
+    /// <returns>A list of child folder paths</returns>
     private List<string> getTileJsonsFromChildFolders(string rootFolder)
     {
         string[] folders = Directory.GetDirectories(rootFolder);
@@ -76,6 +82,10 @@ public class Loader : MonoBehaviour
         return tileJsons;
     }
 
+    /// <summary>
+    /// Read a 3D-Tiles json file and create tasks to read all children 3D-Tiles files and pnts files
+    /// </summary>
+    /// <param name="jsonTile">The root 3D-Tiles file</param>
     private void readTileJson(string jsonTile)
     {
         if (File.Exists(jsonTile))
@@ -103,16 +113,10 @@ public class Loader : MonoBehaviour
         }
     }
 
-    public Thread StartTheThread(string pntsFile)
-    {
-        var t = new Thread(() => readPntsFile(pntsFile));
-        t.Start();
-        return t;
-    }
-
     /// <summary>
     /// Read the complete binary pnts file and create usable points.
     /// </summary>
+    /// <param name="pntsFile">The pnts file</param>
     private void readPntsFile(string pntsFile)
     {
         if (File.Exists(pntsFile))
@@ -173,8 +177,9 @@ public class Loader : MonoBehaviour
     /// <summary>
     /// Read the header from the binary-file.
     /// </summary>
-    /// <param name="reader">The reader containing the binary file</param>
-    /// <returns>True if the header contains a valid format (magic), false if not.</returns>
+    /// <param name="bytes">The bytes of the binary-file</param>
+    /// <param name="index">The current index of the bytes</param>
+    /// <returns>The header containing all the informations</returns>
     private Header readHeader(byte[] bytes, ref int index)
     {
         Header header = new Header();
@@ -194,6 +199,7 @@ public class Loader : MonoBehaviour
     /// <summary>
     /// Log the header to the unity debug log.
     /// </summary>
+    /// <param name="header">The header to log</param>
     private void logHeader(Header header)
     {
         Debug.Log("Format: " + header.Magic);
@@ -206,20 +212,32 @@ public class Loader : MonoBehaviour
     }
 
     /// <summary>
-    /// Parse the feature table json from given bytes.
+    /// Parse the feature table json from given json string.
     /// </summary>
-    /// <param name="json">The json as byte array</param>
+    /// <param name="json">The json string/param>
     /// <returns>Returns the feature table.</returns>
     private FeatureTable parseFeatureTable(string jsonStr)
     {
         return JsonUtility.FromJson<FeatureTable>(jsonStr);
     }
 
+
+    /// <summary>
+    /// Parse the tile set json from given json string.
+    /// </summary>
+    /// <param name="json">The json string/param>
+    /// <returns>Returns the tile set.</returns>
     private TileSet parseTileSet(string json)
     {
         return JsonUtility.FromJson<TileSet>(json);
     }
 
+    /// <summary>
+    /// Read the uint32 at the given bytes at the given index and increase the index accordingly
+    /// </summary>
+    /// <param name="bytes">The bytes of the binary-file</param>
+    /// <param name="index">The current index of the bytes</param>
+    /// <returns>The uint32</returns>
     private uint readUInt32(byte[] bytes, ref int index)
     {
         uint i = BitConverter.ToUInt32(bytes, index);
@@ -228,6 +246,12 @@ public class Loader : MonoBehaviour
         return i;
     }
 
+    /// <summary>
+    /// Read the float at the given bytes at the given index and increase the index accordingly
+    /// </summary>
+    /// <param name="bytes">The bytes of the binary-file</param>
+    /// <param name="index">The current index of the bytes</param>
+    /// <returns>The float</returns>
     private float readSingle(byte[] bytes, ref int index)
     {
         float f = BitConverter.ToSingle(bytes, index);
@@ -236,11 +260,24 @@ public class Loader : MonoBehaviour
         return f;
     }
 
+    /// <summary>
+    /// Return the byte at the given bytes at the given index and increase the index accordingly
+    /// </summary>
+    /// <param name="bytes">The bytes of the binary-file</param>
+    /// <param name="index">The current index of the bytes</param>
+    /// <returns>The byte</returns>
     private byte readByte(byte[] bytes, ref int index)
     {
         return bytes[index++];
     }
 
+    /// <summary>
+    /// Return the given number of bytes at the given bytes at the given index and increase the index accordingly
+    /// </summary>
+    /// <param name="bytes">The bytes of the binary-file</param>
+    /// <param name="index">The current index of the bytes</param>
+    /// <param name="numBytes">The number of bytes to read</param>
+    /// <returns></returns>
     private byte[] readBytes(byte[] bytes, ref int index, int numBytes)
     {
         byte[] b = new byte[numBytes];
@@ -250,6 +287,13 @@ public class Loader : MonoBehaviour
         return b;
     }
 
+    /// <summary>
+    /// Read the given number of chars at the given bytes and return them as string and increase the index accordingly
+    /// </summary>
+    /// <param name="bytes">The bytes of the binary-file</param>
+    /// <param name="index">The current index of the bytes</param>
+    /// <param name="numChars">The number of chars to read</param>
+    /// <returns>The chars as a string</returns>
     private string readCharsAsString(byte[] bytes, ref int index, int numChars)
     {
         return Encoding.UTF8.GetString(readBytes(bytes, ref index, numChars));

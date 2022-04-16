@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VFX;
@@ -15,6 +16,10 @@ public class PointCloudRenderer : MonoBehaviour
     private uint _resolution = 2048;
 
 
+    /// <summary>
+    /// Creates a list of points and colors to render
+    /// </summary>
+    /// <param name="pointsLists">The list of points to render</param>
     public void RenderPoints(List<List<IPoint<float>>> pointsLists)
     {
         RenderSettings.ambientLight = Color.black;
@@ -31,10 +36,13 @@ public class PointCloudRenderer : MonoBehaviour
                 colors.Add(new Color(point.Color[0] / 255f, point.Color[1] / 255f, point.Color[2] / 255f));
             }
         }
-        Debug.Log("Rendering " + positions.Count + " points");
-        setParticles(positions.ToArray(), colors.ToArray());
+        setPoints(positions.ToArray(), colors.ToArray());
+        Debug.Log("Render End: " + DateTime.Now);
     }
 
+    /// <summary>
+    /// If _toUpdate is true renders all the created points with the vfx graph
+    /// </summary>
     private void Update()
     {
         if (_toUpdate)
@@ -50,7 +58,12 @@ public class PointCloudRenderer : MonoBehaviour
         }
     }
 
-    private void setParticles(Vector3[] positions, Color[] colors)
+    /// <summary>
+    /// Creates the points in form of a texture2d from the positions and colors
+    /// </summary>
+    /// <param name="positions">The positions of the points</param>
+    /// <param name="colors">The colors of the points</param>
+    private void setPoints(Vector3[] positions, Color[] colors)
     {
         _texColor = new Texture2D(positions.Length > (int)_resolution ? (int)_resolution : positions.Length, Mathf.Clamp(positions.Length / (int)_resolution, 1, (int)_resolution), TextureFormat.RGBAFloat, false);
         _texPosScale = new Texture2D(positions.Length > (int)_resolution ? (int)_resolution : positions.Length, Mathf.Clamp(positions.Length / (int)_resolution, 1, (int)_resolution), TextureFormat.RGBAFloat, false);
